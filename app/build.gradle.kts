@@ -92,4 +92,9 @@ dependencies {
     //Coil
     implementation("io.coil-kt:coil-compose:2.5.0")
 
+    //Arrow
+    implementation("io.arrow-kt:arrow-core:1.2.0")
+    implementation("io.arrow-kt:arrow-fx-coroutines:1.2.0")
+
+
 }
