@@ -28,7 +28,6 @@ fun RandomDuckScreen(
             duck = state.duck,
             modifier = Modifier
                 .padding(8.dp)
-                .fillMaxWidth()
         )
     }
 
