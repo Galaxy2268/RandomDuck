@@ -6,6 +6,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,7 +23,7 @@ fun DuckCard(
     elevation: CardElevation = CardDefaults.cardElevation(2.dp),
     colors: CardColors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
     ){
-    Card(
+    ElevatedCard(
         modifier = modifier,
         shape = shape,
         elevation = elevation,
@@ -32,7 +33,7 @@ fun DuckCard(
             model = duck.url,
             contentDescription = "Random Duck",
             modifier = Modifier
-                .aspectRatio(0.8f),
+                .aspectRatio(0.9f),
             contentScale = ContentScale.FillBounds
         )
     }
