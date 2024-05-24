@@ -6,7 +6,7 @@ import com.galaxy.randomduck.one_duck.domain.model.NetworkError
 import com.galaxy.randomduck.one_duck.domain.repository.DuckRepository
 
 class GetRandomDuck(private val repository: DuckRepository) {
-    suspend operator fun invoke(): Either<NetworkError, Duck>{
+    suspend operator fun invoke(): Either<NetworkError, List<Duck>>{
         return repository.getRandomDuck()
     }
 }

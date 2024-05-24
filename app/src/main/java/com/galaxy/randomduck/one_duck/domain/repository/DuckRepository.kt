@@ -6,6 +6,6 @@ import com.galaxy.randomduck.one_duck.domain.model.NetworkError
 
 interface DuckRepository {
 
-    suspend fun getRandomDuck(): Either<NetworkError, Duck>
+    suspend fun getRandomDuck(): Either<NetworkError, List<Duck>>
 
 }

@@ -2,7 +2,6 @@ package com.galaxy.randomduck.one_duck.presentation.random_duck.components
 
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
@@ -13,12 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.galaxy.randomduck.one_duck.domain.model.Duck
 
 @Composable
 fun DuckCard(
     modifier: Modifier = Modifier,
-    duck: Duck,
+    model: String,
     shape: RoundedCornerShape = RoundedCornerShape(8.dp),
     elevation: CardElevation = CardDefaults.cardElevation(2.dp),
     colors: CardColors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
@@ -30,11 +28,11 @@ fun DuckCard(
         colors = colors
     ) {
         AsyncImage(
-            model = duck.url,
+            model = model,
             contentDescription = "Random Duck",
             modifier = Modifier
                 .aspectRatio(0.9f),
-            contentScale = ContentScale.FillBounds
+            contentScale = ContentScale.FillBounds,
         )
     }
 }
