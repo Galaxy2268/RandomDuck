@@ -17,16 +17,23 @@ class RandomDuckViewModel
     private val _state = mutableStateOf(DuckState())
     val state: State<DuckState> = _state
 
-    val duckList: MutableList<Duck> = mutableListOf()
+    private val duckList: MutableList<Duck> = mutableListOf()
     private var counter = -1
 
 
+
     init {
-        getDucks()
+        getInitDucks()
     }
 
     fun getNextDuck() {
-        if (counter % 5 == 0) {
+
+        if(duckList.isEmpty() || _state.value.error != null){
+            getInitDucks()
+            return
+        }
+
+        if (duckList.size - 5 == counter) {
             getDucks()
             return
         }
@@ -37,15 +44,29 @@ class RandomDuckViewModel
 
     private fun getDucks() {
         viewModelScope.launch {
+            counter++
+            _state.value = state.value.copy(duck = duckList[counter])
             getUseCase().onRight {
-                counter++
                 duckList.addAll(it)
-                _state.value = state.value.copy(duck = duckList[counter], error = null, isLast = false)
+                _state.value = state.value.copy(error = null, isLast = false, newDucks = it)
             }.onLeft {
                 _state.value = state.value.copy(error = it.error.message)
             }
         }
     }
+
+    private fun getInitDucks(){
+        viewModelScope.launch {
+            getUseCase().onRight {
+                counter++
+                duckList.addAll(it)
+                _state.value = state.value.copy(duck = duckList[counter], error = null, isLast = false, newDucks = it)
+            }.onLeft {
+                _state.value = state.value.copy(error = it.error.message)
+            }
+        }
+    }
+
 
     fun getPrevDuck(){
         if(counter <= 0){

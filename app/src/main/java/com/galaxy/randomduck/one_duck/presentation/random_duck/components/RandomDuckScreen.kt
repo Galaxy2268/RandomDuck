@@ -1,5 +1,8 @@
 package com.galaxy.randomduck.one_duck.presentation.random_duck.components
 
+import android.app.DownloadManager
+import android.content.Intent
+import android.os.Environment
 import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.clickable
@@ -22,13 +25,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.galaxy.randomduck.one_duck.presentation.random_duck.RandomDuckViewModel
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MIN_OFFSET_FOR_ACTION_X
+import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MIN_OFFSET_FOR_ACTION_Y
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.RANGE_OFFSET_X
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.RANGE_OFFSET_Y
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Direction
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 
@@ -43,6 +51,8 @@ fun RandomDuckScreen(
     val offsetY = remember { Animatable(0f) }
     var direction by remember { mutableStateOf(Direction.DEFAULT) }
     var isActionPerformed by remember { mutableStateOf(false) }
+    val downloadManager = context.getSystemService(DownloadManager::class.java)
+
 
 
 
@@ -64,6 +74,19 @@ fun RandomDuckScreen(
                 Toast.LENGTH_LONG
             ).show()
         }
+    }
+
+    LaunchedEffect(key1 = state.newDucks) {
+        coroutineScope.launch {
+            state.newDucks.forEach {
+                val request = ImageRequest.Builder(context)
+                    .data(it.url)
+                    .build()
+                context.imageLoader.enqueue(request)
+            }
+        }
+
+
     }
 
 
@@ -117,7 +140,7 @@ fun RandomDuckScreen(
                             coroutineScope.launch {
                                 if (!isActionPerformed) {
                                     coroutineScope.launch {
-                                        if (direction == Direction.END && offsetX.value < MIN_OFFSET_FOR_ACTION_X) {
+                                        if (direction == Direction.END && offsetX.value.absoluteValue > MIN_OFFSET_FOR_ACTION_X) {
                                             viewModel.getNextDuck()
                                             isActionPerformed = true
                                         } else if (direction == Direction.START && offsetX.value > MIN_OFFSET_FOR_ACTION_X) {
@@ -127,9 +150,11 @@ fun RandomDuckScreen(
                                     }
                                 }
                             }
-                            offsetX.animateTo(0f)
-                            direction = Direction.DEFAULT
-                            isActionPerformed = false
+                            coroutineScope.launch {
+                                offsetX.animateTo(0f)
+                                direction = Direction.DEFAULT
+                                isActionPerformed = false
+                            }
                         }
                     )
                     .draggable(
@@ -144,8 +169,32 @@ fun RandomDuckScreen(
                             }
                         },
                         onDragStopped = {
-                            offsetY.animateTo(0f)
-                            direction = Direction.DEFAULT
+                            if(!isActionPerformed) {
+                                coroutineScope.launch {
+                                    if (direction == Direction.TOP && offsetY.value > MIN_OFFSET_FOR_ACTION_Y) {
+                                        val request = DownloadManager.Request(state.duck.url.toUri())
+                                            .setMimeType("image/jpeg")
+                                            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                                            .setDestinationInExternalPublicDir(Environment.DIRECTORY_PICTURES, "duck${state.duck.url.substringAfter("api/")}")
+                                        downloadManager.enqueue(request)
+                                        isActionPerformed = true
+                                    } else if (direction == Direction.BOTTOM && offsetY.value.absoluteValue > MIN_OFFSET_FOR_ACTION_Y) {
+                                        val intent = Intent(Intent.ACTION_SEND).apply {
+                                            type = "text/plain"
+                                            putExtra(Intent.EXTRA_TEXT, state.duck.url)
+                                            isActionPerformed = true
+                                        }
+                                        if (intent.resolveActivity(context.packageManager) != null) {
+                                            context.startActivity(intent)
+                                        }
+                                    }
+                                }
+                            }
+                            coroutineScope.launch {
+                                offsetY.animateTo(0f)
+                                direction = Direction.DEFAULT
+                                isActionPerformed = false
+                            }
                         }
                     )
             )
