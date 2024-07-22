@@ -50,11 +50,46 @@ fun RandomDuckScreen(
     val offsetX = remember { Animatable(0f) }
     val offsetY = remember { Animatable(0f) }
     var direction by remember { mutableStateOf(Direction.DEFAULT) }
-    var isActionPerformed by remember { mutableStateOf(false) }
+    var actionState by remember { mutableStateOf(Direction.DEFAULT) }
     val downloadManager = context.getSystemService(DownloadManager::class.java)
 
 
 
+    LaunchedEffect(key1 = actionState) {
+        when(actionState){
+            Direction.START -> {
+                viewModel.getPrevDuck()
+                actionState = Direction.DEFAULT
+            }
+            Direction.END -> {
+                viewModel.getNextDuck()
+                actionState = Direction.DEFAULT
+            }
+            Direction.TOP -> {
+                val request = DownloadManager
+                    .Request(state.duck.url.toUri())
+                    .setMimeType("image/jpeg")
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    .setDestinationInExternalPublicDir(
+                        Environment.DIRECTORY_PICTURES,
+                        "duck${state.duck.url.substringAfter("api/")}"
+                    )
+                downloadManager.enqueue(request)
+                actionState = Direction.DEFAULT
+            }
+            Direction.BOTTOM -> {
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, state.duck.url)
+                }
+                if (intent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(intent)
+                }
+                actionState = Direction.DEFAULT
+            }
+            Direction.DEFAULT -> {}
+        }
+    }
 
     LaunchedEffect(key1 = state.error) {
         if (state.error != null) {
@@ -77,16 +112,14 @@ fun RandomDuckScreen(
     }
 
     LaunchedEffect(key1 = state.newDucks) {
-        coroutineScope.launch {
             state.newDucks.forEach {
-                val request = ImageRequest.Builder(context)
-                    .data(it.url)
-                    .build()
-                context.imageLoader.enqueue(request)
+                coroutineScope.launch {
+                    val request = ImageRequest.Builder(context)
+                        .data(it.url)
+                        .build()
+                    context.imageLoader.enqueue(request)
+                }
             }
-        }
-
-
     }
 
 
@@ -138,22 +171,15 @@ fun RandomDuckScreen(
                         },
                         onDragStopped = {
                             coroutineScope.launch {
-                                if (!isActionPerformed) {
-                                    coroutineScope.launch {
-                                        if (direction == Direction.END && offsetX.value.absoluteValue > MIN_OFFSET_FOR_ACTION_X) {
-                                            viewModel.getNextDuck()
-                                            isActionPerformed = true
-                                        } else if (direction == Direction.START && offsetX.value > MIN_OFFSET_FOR_ACTION_X) {
-                                            viewModel.getPrevDuck()
-                                            isActionPerformed = true
-                                        }
-                                    }
+                                if (direction == Direction.END && offsetX.value.absoluteValue > MIN_OFFSET_FOR_ACTION_X) {
+                                    actionState = Direction.END
+                                } else if (direction == Direction.START && offsetX.value > MIN_OFFSET_FOR_ACTION_X) {
+                                    actionState = Direction.START
                                 }
                             }
                             coroutineScope.launch {
                                 offsetX.animateTo(0f)
                                 direction = Direction.DEFAULT
-                                isActionPerformed = false
                             }
                         }
                     )
@@ -169,31 +195,16 @@ fun RandomDuckScreen(
                             }
                         },
                         onDragStopped = {
-                            if(!isActionPerformed) {
-                                coroutineScope.launch {
-                                    if (direction == Direction.TOP && offsetY.value > MIN_OFFSET_FOR_ACTION_Y) {
-                                        val request = DownloadManager.Request(state.duck.url.toUri())
-                                            .setMimeType("image/jpeg")
-                                            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                                            .setDestinationInExternalPublicDir(Environment.DIRECTORY_PICTURES, "duck${state.duck.url.substringAfter("api/")}")
-                                        downloadManager.enqueue(request)
-                                        isActionPerformed = true
-                                    } else if (direction == Direction.BOTTOM && offsetY.value.absoluteValue > MIN_OFFSET_FOR_ACTION_Y) {
-                                        val intent = Intent(Intent.ACTION_SEND).apply {
-                                            type = "text/plain"
-                                            putExtra(Intent.EXTRA_TEXT, state.duck.url)
-                                            isActionPerformed = true
-                                        }
-                                        if (intent.resolveActivity(context.packageManager) != null) {
-                                            context.startActivity(intent)
-                                        }
-                                    }
+                            coroutineScope.launch {
+                                if (direction == Direction.TOP && offsetY.value > MIN_OFFSET_FOR_ACTION_Y) {
+                                    actionState = Direction.TOP
+                                } else if (direction == Direction.BOTTOM && offsetY.value.absoluteValue > MIN_OFFSET_FOR_ACTION_Y) {
+                                    actionState = Direction.BOTTOM
                                 }
                             }
                             coroutineScope.launch {
                                 offsetY.animateTo(0f)
                                 direction = Direction.DEFAULT
-                                isActionPerformed = false
                             }
                         }
                     )
