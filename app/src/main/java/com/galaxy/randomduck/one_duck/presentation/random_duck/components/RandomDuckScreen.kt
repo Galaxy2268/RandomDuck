@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Environment
 import android.widget.Toast
 import androidx.compose.animation.core.Animatable
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -29,6 +28,7 @@ import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.imageLoader
 import coil.request.ImageRequest
+import com.galaxy.randomduck.R
 import com.galaxy.randomduck.one_duck.presentation.random_duck.RandomDuckViewModel
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MIN_OFFSET_FOR_ACTION_X
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MIN_OFFSET_FOR_ACTION_Y
@@ -130,20 +130,39 @@ fun RandomDuckScreen(
     ) {
         if (state.error != null) {
             ErrorCard(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clickable { viewModel.getNextDuck() }
+                modifier = Modifier.padding(8.dp),
+                action = { viewModel.getNextDuck() }
             )
         } else {
-            MockCard(
-                text = when (direction) {
-                    Direction.START -> "START"
-                    Direction.END -> "END"
-                    Direction.TOP -> "TOP"
-                    Direction.BOTTOM -> "BOTTOM"
-                    Direction.DEFAULT -> "DEFAULT"
-                }
+            BackGroundCard(
+                id = R.drawable.duck_direction_left,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .offset{
+                        IntOffset(
+                            x = offsetX.value
+                                .roundToInt()
+                                .coerceAtMost(0),
+                            y = offsetY.value
+                                .roundToInt()
+                        )
+                    }
             )
+            BackGroundCard(
+                id = R.drawable.duck_direction_right,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .offset{
+                        IntOffset(
+                            x = offsetX.value
+                                .roundToInt()
+                                .coerceAtLeast(0),
+                            y = offsetY.value
+                                .roundToInt()
+                        )
+                    }
+            )
+
             DuckCard(
                 model = state.duck.url,
                 modifier = Modifier
