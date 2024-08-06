@@ -30,10 +30,12 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import com.galaxy.randomduck.R
 import com.galaxy.randomduck.one_duck.presentation.random_duck.RandomDuckViewModel
+import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MAX_OFFSET_X
+import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MAX_OFFSET_Y
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MIN_OFFSET_FOR_ACTION_X
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MIN_OFFSET_FOR_ACTION_Y
-import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.RANGE_OFFSET_X
-import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.RANGE_OFFSET_Y
+import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MIN_OFFSET_X
+import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MIN_OFFSET_Y
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Direction
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -135,30 +137,64 @@ fun RandomDuckScreen(
             )
         } else {
             BackGroundCard(
-                id = R.drawable.duck_direction_left,
+                id = R.drawable.duck_left,
                 modifier = Modifier
                     .padding(8.dp)
-                    .offset{
+                    .offset {
                         IntOffset(
                             x = offsetX.value
                                 .roundToInt()
-                                .coerceAtMost(0),
+                                .coerceIn(MIN_OFFSET_X..0),
                             y = offsetY.value
                                 .roundToInt()
+                                .coerceIn(MIN_OFFSET_Y..MAX_OFFSET_Y)
                         )
                     }
             )
             BackGroundCard(
-                id = R.drawable.duck_direction_right,
+                id = R.drawable.duck_right,
                 modifier = Modifier
                     .padding(8.dp)
-                    .offset{
+                    .offset {
                         IntOffset(
                             x = offsetX.value
                                 .roundToInt()
-                                .coerceAtLeast(0),
+                                .coerceIn(0..MAX_OFFSET_X),
                             y = offsetY.value
                                 .roundToInt()
+                                .coerceIn(MIN_OFFSET_Y..MAX_OFFSET_Y)
+                        )
+                    }
+            )
+
+            BackGroundCard(
+                id = R.drawable.send,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .offset {
+                        IntOffset(
+                            x = offsetX.value
+                                .roundToInt()
+                                .coerceIn(MIN_OFFSET_X..MAX_OFFSET_X),
+                            y = offsetY.value
+                                .roundToInt()
+                                .coerceIn(0..MAX_OFFSET_Y)
+                        )
+                    }
+            )
+
+            BackGroundCard(
+                id = R.drawable.download,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .offset {
+                        IntOffset(
+                            x = offsetX.value
+                                .roundToInt()
+                                .coerceIn(MIN_OFFSET_X..MAX_OFFSET_X),
+                            y = offsetY.value
+                                .roundToInt()
+                                .coerceIn(MIN_OFFSET_Y..0)
                         )
                     }
             )
@@ -171,10 +207,10 @@ fun RandomDuckScreen(
                         IntOffset(
                             x = offsetX.value
                                 .roundToInt()
-                                .coerceIn(RANGE_OFFSET_X),
+                                .coerceIn(MIN_OFFSET_X..MAX_OFFSET_X),
                             y = offsetY.value
                                 .roundToInt()
-                                .coerceIn(RANGE_OFFSET_Y)
+                                .coerceIn(MIN_OFFSET_Y..MAX_OFFSET_Y)
                         )
                     }
                     .draggable(
