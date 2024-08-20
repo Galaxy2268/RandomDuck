@@ -12,6 +12,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,6 +31,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.galaxy.randomduck.R
@@ -37,6 +43,7 @@ import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.C
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MIN_OFFSET_X
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MIN_OFFSET_Y
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Direction
+import com.galaxy.randomduck.one_duck.presentation.util.Screen
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -44,7 +51,8 @@ import kotlin.math.roundToInt
 
 @Composable
 fun RandomDuckScreen(
-    viewModel: RandomDuckViewModel = hiltViewModel()
+    viewModel: RandomDuckViewModel = hiltViewModel(),
+    navController: NavController
 ) {
     val state = viewModel.state.value
     val context = LocalContext.current
@@ -130,6 +138,24 @@ fun RandomDuckScreen(
             .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
+
+        IconButton(
+            modifier = Modifier
+                .align(Alignment.TopStart),
+            onClick = {
+                navController.navigate(
+                    Screen.InfoScreen.toString()
+                )
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Info",
+                modifier = Modifier
+                    .size(32.dp)
+            )
+        }
+
         if (state.error != null) {
             ErrorCard(
                 modifier = Modifier.padding(8.dp),
