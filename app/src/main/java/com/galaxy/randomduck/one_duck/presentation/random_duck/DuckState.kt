@@ -6,5 +6,6 @@ data class DuckState(
     val duck: Duck = Duck(""),
     val error: String? = null,
     val isLast: Boolean = false,
-    val newDucks: List<Duck> = emptyList()
+    val newDucks: List<Duck> = emptyList(),
+    val isFirstLaunch: Boolean = true
 )

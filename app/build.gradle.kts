@@ -99,5 +99,8 @@ dependencies {
     implementation(libs.arrow.core)
     implementation(libs.arrow.fx.coroutines)
 
+    implementation(libs.review)
+    implementation(libs.review.ktx)
+
 
 }

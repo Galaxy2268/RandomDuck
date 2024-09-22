@@ -18,12 +18,18 @@ class RandomDuckViewModel
     val state: State<DuckState> = _state
 
     private val duckList: MutableList<Duck> = mutableListOf()
+
     private var counter = -1
+
 
 
 
     init {
         getInitDucks()
+    }
+
+    fun markAsLaunched(){
+        _state.value = state.value.copy(isFirstLaunch = false)
     }
 
     fun getNextDuck() {

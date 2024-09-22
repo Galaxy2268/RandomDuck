@@ -44,6 +44,7 @@ import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.C
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MIN_OFFSET_Y
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Direction
 import com.galaxy.randomduck.one_duck.presentation.util.Screen
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -63,18 +64,30 @@ fun RandomDuckScreen(
     var actionState by remember { mutableStateOf(Direction.DEFAULT) }
     val downloadManager = context.getSystemService(DownloadManager::class.java)
 
-
+    LaunchedEffect(Unit) {
+        if (viewModel.state.value.isFirstLaunch) {
+            coroutineScope.launch {
+                delay(2000)
+                offsetX.animateTo(-150f)
+                delay(1000)
+                offsetX.animateTo(0f)
+            }
+        }
+        viewModel.markAsLaunched()
+    }
 
     LaunchedEffect(key1 = actionState) {
-        when(actionState){
+        when (actionState) {
             Direction.START -> {
                 viewModel.getPrevDuck()
                 actionState = Direction.DEFAULT
             }
+
             Direction.END -> {
                 viewModel.getNextDuck()
                 actionState = Direction.DEFAULT
             }
+
             Direction.TOP -> {
                 val request = DownloadManager
                     .Request(state.duck.url.toUri())
@@ -87,6 +100,7 @@ fun RandomDuckScreen(
                 downloadManager.enqueue(request)
                 actionState = Direction.DEFAULT
             }
+
             Direction.BOTTOM -> {
                 val intent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
@@ -97,6 +111,7 @@ fun RandomDuckScreen(
                 }
                 actionState = Direction.DEFAULT
             }
+
             Direction.DEFAULT -> {}
         }
     }
@@ -122,14 +137,14 @@ fun RandomDuckScreen(
     }
 
     LaunchedEffect(key1 = state.newDucks) {
-            state.newDucks.forEach {
-                coroutineScope.launch {
-                    val request = ImageRequest.Builder(context)
-                        .data(it.url)
-                        .build()
-                    context.imageLoader.enqueue(request)
-                }
+        state.newDucks.forEach {
+            coroutineScope.launch {
+                val request = ImageRequest.Builder(context)
+                    .data(it.url)
+                    .build()
+                context.imageLoader.enqueue(request)
             }
+        }
     }
 
 
