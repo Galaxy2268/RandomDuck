@@ -6,8 +6,11 @@ import android.os.Environment
 import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.indication
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -26,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -44,6 +48,7 @@ import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.C
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Constants.MIN_OFFSET_Y
 import com.galaxy.randomduck.one_duck.presentation.random_duck.components.util.Direction
 import com.galaxy.randomduck.one_duck.presentation.util.Screen
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -63,13 +68,13 @@ fun RandomDuckScreen(
     var direction by remember { mutableStateOf(Direction.DEFAULT) }
     var actionState by remember { mutableStateOf(Direction.DEFAULT) }
     val downloadManager = context.getSystemService(DownloadManager::class.java)
+    var startAnimationJob: Job? = null
 
     LaunchedEffect(Unit) {
         if (viewModel.state.value.isFirstLaunch) {
-            coroutineScope.launch {
+            startAnimationJob = coroutineScope.launch {
                 delay(2000)
                 offsetX.animateTo(-150f)
-                delay(1000)
                 offsetX.animateTo(0f)
             }
         }
@@ -243,6 +248,16 @@ fun RandomDuckScreen(
             DuckCard(
                 model = state.duck.url,
                 modifier = Modifier
+                    .pointerInput(Unit){
+                        detectTapGestures (
+                            onPress = {
+                                if(startAnimationJob != null){
+                                    startAnimationJob?.cancel()
+                                    offsetX.animateTo(0f)
+                                }
+                            }
+                        )
+                    }
                     .padding(8.dp)
                     .offset {
                         IntOffset(
